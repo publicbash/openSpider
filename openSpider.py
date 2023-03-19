@@ -21,7 +21,8 @@ class OpenSpider:
 		print(f"Fetching {site_url}...")
 		self.driver.get(site_url)
 
-		elems = self.driver.find_elements_by_xpath("//a[@href]")
+		elems = self.driver.find_elements("xpath", "//a[@href]")
+
 		links = []
 		for elem in elems:
 			links.append(elem.get_attribute("href"))
