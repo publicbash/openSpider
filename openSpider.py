@@ -25,21 +25,24 @@ class OpenSpider:
 
 		links = []
 		for elem in elems:
-			links.append(elem.get_attribute("href"))
+			try:
+				links.append(elem.get_attribute("href"))
+			except Exception as e:
+				print('An error occurred:', e)			
 
 		result = {}
 		result["url"] = site_url
 		result["links"] = links
 
 		self.results.append(result)
-		return result
+		
 
 	def crawl_urls(self, urls):
 		count = 1
 		for url in urls:
 			if validators.url(url):
 				print(f'Crawl_url {count}/{len(urls)}: {url.strip()}')
-				result = self.crawl_url(url.strip())
+				self.crawl_url(url.strip())
 			else:
 				print(f'Skip {count}/{len(urls)}: {url}')				
 			count += 1
@@ -94,16 +97,7 @@ class OpenSpider:
 		return lines
 
 
-# ToDo: Proxy
-def setup_chrome_driver_proxy(proxy):
-	#PROXY = "11.456.448.110:8080"  -- Example
-	chrome_options = WebDriver.ChromeOptions()
-	#chrome_options.add_argument('--proxy-server=%s' % PROXY)
-	chrome_options.add_argument('--proxy-server=%s' % proxy)
-	chrome = webdriver.Chrome(chrome_options=chrome_options)
-	chrome.get("https://www.google.com")
-
-def setup_chrome_driver():
+def setup_chrome_driver(args):
 	options = webdriver.ChromeOptions()
 
 	options.add_argument("--no-sandbox")
@@ -114,6 +108,13 @@ def setup_chrome_driver():
 
 	#The Chromium Team recently added a 2nd headless mode: --headless=chrome which gives you the full functionality of Chrome in headless mode, and even allows extensions. 
 	#Use xvfb instead of headless options and install extension
+
+	# Check Proxy
+	if args.proxy_anon:
+		print(f'Anonymous proxy: {args.proxy_anon}')
+		proxy_anon = args.proxy_anon
+		options.add_argument('--proxy-server=%s' % proxy_anon)
+
 
 	options.add_argument('window-size=1920x1080')
 
@@ -128,7 +129,7 @@ def main():
 	parser.add_argument('--url', type=str)
 	parser.add_argument('--o', type=str)
 	parser.add_argument('--list', type=str)
-	parser.add_argument('--proxy', type=str)
+	parser.add_argument('--proxy_anon', type=str)
 	parser.add_argument('--print', type=str)
 	args = parser.parse_args()
 
@@ -146,20 +147,23 @@ def main():
 			print("invalid URL")
 			exit()
 
+
+		
 	# Start driver and browser
-	driver = setup_chrome_driver()
+	driver = setup_chrome_driver(args)
 	os = OpenSpider(driver) 
 
 	# Check input
 	if args.list:
 		urls = os.read_urls_from_file(args.list)
-		results = os.crawl_urls(urls)
+		#results = os.crawl_urls(urls)
+		os.crawl_urls(urls)
 		#os.print_results_complete(results)
 		os.print_results_resume()
 
 	if args.url:
 		url = args.url
-		result = os.crawl_url(url)
+		os.crawl_url(url)
 		#os.print_result_complete(result)
 #		os.print_results_complete()
 		os.print_results_resume()
@@ -175,8 +179,8 @@ def main():
 		os.print_results_complete()
 		os.print_results_resume()
 
-	if args.proxy:
-		print('Proxy not implemented yet')  
+#	if args.proxy_anon:
+#		print('Proxy not implemented yet')  
 
 
 main()
