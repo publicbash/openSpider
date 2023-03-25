@@ -156,7 +156,6 @@ def main():
 	# Check input
 	if args.list:
 		urls = os.read_urls_from_file(args.list)
-		#results = os.crawl_urls(urls)
 		os.crawl_urls(urls)
 		#os.print_results_complete(results)
 		os.print_results_resume()
