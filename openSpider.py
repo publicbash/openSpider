@@ -1,5 +1,6 @@
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
+from seleniumwire import webdriver as sw_webdriver
 
 import validators
 import argparse #required for args
@@ -19,7 +20,11 @@ class OpenSpider:
 
 	def crawl_url(self, site_url):
 		print(f"Fetching {site_url}...")
-		self.driver.get(site_url)
+		
+		try:
+			self.driver.get(site_url)
+		except Exception as e:
+			print('An error occurred on get:', e)			
 
 		elems = self.driver.find_elements("xpath", "//a[@href]")
 
@@ -28,11 +33,13 @@ class OpenSpider:
 			try:
 				links.append(elem.get_attribute("href"))
 			except Exception as e:
-				print('An error occurred:', e)			
+				print('An error occurred on get_attribute("href"):', e)			
 
 		result = {}
 		result["url"] = site_url
 		result["links"] = links
+
+		self.print_result_resume(result)
 
 		self.results.append(result)
 		
@@ -83,7 +90,7 @@ class OpenSpider:
 		except FileNotFoundError as e:
 			print('File does not exist:', e)
 		except Exception as e:
-			print('An error occurred:', e)
+			print('An error occurred on Open File:', e)
 	
 		lines = file1.readlines()
   
@@ -104,21 +111,34 @@ def setup_chrome_driver(args):
 	options.add_argument("--disable-dev-shm-usage")
 
 	options.add_argument('--headless')  #Options
-	options.headless = True             #Options
+#	options.headless = True             #Options
 
-	#The Chromium Team recently added a 2nd headless mode: --headless=chrome which gives you the full functionality of Chrome in headless mode, and even allows extensions. 
-	#Use xvfb instead of headless options and install extension
+	options.add_argument('window-size=1920x1080')
 
 	# Check Proxy
+	if args.proxy_auth:
+		print(f'Auth proxy: {args.proxy_auth}')
+		proxy_auth = args.proxy_auth
+		options_wire = {
+			'proxy': {
+				'http': proxy_auth,
+				'https': proxy_auth,
+				'no_proxy': 'localhost,127.0.0.1' # excludes
+			}
+
+		}
+		chrome_driver = sw_webdriver.Chrome(options=options, seleniumwire_options=options_wire)
+
+
 	if args.proxy_anon:
 		print(f'Anonymous proxy: {args.proxy_anon}')
 		proxy_anon = args.proxy_anon
 		options.add_argument('--proxy-server=%s' % proxy_anon)
 
+	if not args.proxy_auth:
+		chrome_driver = webdriver.Chrome(options=options)
 
-	options.add_argument('window-size=1920x1080')
 
-	chrome_driver = webdriver.Chrome(options=options)
 	return chrome_driver
 
 
@@ -130,6 +150,7 @@ def main():
 	parser.add_argument('--o', type=str)
 	parser.add_argument('--list', type=str)
 	parser.add_argument('--proxy_anon', type=str)
+	parser.add_argument('--proxy_auth', type=str)
 	parser.add_argument('--print', type=str)
 	args = parser.parse_args()
 
