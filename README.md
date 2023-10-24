@@ -1,4 +1,4 @@
-**Install:**
+# **Install**
 
 python3 -m venv ./venv
 
@@ -6,37 +6,47 @@ source venv/bin/activate
 
 pip3 install -r requirements.txt
 
-**Use:**
+# **Use:**
 
 python3 openSpider.py [-h] [--url URL] [--o O] [--list LIST] [--proxy PROXY]
                      [--print PRINT] [--db DB_NAME] [--print_new Y]
 
 
-**Examples:**
+## **Examples:**
 
-**input**
+**input:**
+
 --url www.anyweb.com
+
 --list url_list.txt
 
-**output**
+**output:**
+
 --o output.txt
 
-**database**
+**database:**
+
 --db database_name
 --print_new
 
-**proxy**
+**proxy:**
+
 --proxy_auth http://user:pass@ip:port 
+
 --proxy_anon ip:port 
 
-**console**
+
+**console:**
+
 --print x  <- screen
+
 --print_new x  <- only works with --db
 
 
-**Examples:**
+# **Examples:**
 
 --url http://www.clarin.com
+
 --list url_list.txt
 
 --o output.txt
